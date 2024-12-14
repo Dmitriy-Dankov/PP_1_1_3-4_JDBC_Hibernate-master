@@ -20,7 +20,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
     @Override
     public void createUsersTable() {
         try {
-            String query = "CREATE TABLE users "
+            final String query = "CREATE TABLE IF NOT EXISTS users "
                 .concat("(id INTEGER UNSIGNED not NULL AUTO_INCREMENT, ")
                 .concat("name VARCHAR(16) not NULL, ")
                 .concat("last_name VARCHAR (16) not NULL, ")
@@ -36,7 +36,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
     @Override
     public void dropUsersTable() {        
         try {
-            statement.executeUpdate("DROP TABLE users");
+            statement.executeUpdate("DROP TABLE IF EXISTS users");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -45,10 +45,9 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
     @Override
     public void saveUser(String name, String lastName, byte age) {
         if (name.isEmpty() || lastName.isEmpty() || age < 5 || age > 126) return;
-        try {
-            String query = "INSERT INTO users (name, last_name, age) ".concat("VALUES ")
+        final String query = "INSERT INTO users (name, last_name, age) ".concat("VALUES ")
                 .concat(String.format("('%s', '%s', %d)", name, lastName, age));
-
+        try {
             statement.executeUpdate(query);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -57,8 +56,9 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
 
     @Override
     public void removeUserById(long id) {
+        final String query = "DELETE FROM users WHERE id = " + id;
         try {
-            statement.executeUpdate("DELETE FROM users WHERE id = "+ id);
+            statement.executeUpdate(query);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
