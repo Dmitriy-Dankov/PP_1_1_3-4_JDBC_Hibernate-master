@@ -1,9 +1,13 @@
 package jm.task.core.jdbc;
 
+import jm.task.core.jdbc.dao.UserDaoHibernateImpl;
 import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
+
+//import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
 
 public class Main {
     public static void main(String[] args) {
+        //UserDaoHibernateImpl userDao = new UserDaoHibernateImpl();
         try (UserDaoJDBCImpl userDao = new UserDaoJDBCImpl()) {
             userDao.createUsersTable();
 
@@ -17,7 +21,7 @@ public class Main {
             userDao.cleanUsersTable();
             userDao.dropUsersTable();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+           System.out.println(e.getMessage());
         }
     }
 }
