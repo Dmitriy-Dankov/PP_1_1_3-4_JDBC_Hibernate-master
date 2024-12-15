@@ -4,7 +4,6 @@ import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 
 import java.util.List;
-
 import org.hibernate.Session;
 
 public class UserDaoHibernateImpl implements UserDao {
