@@ -39,8 +39,7 @@ public class UserDaoHibernateImpl implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
         try (Session session = Util.getSessionFactory().openSession()){            
             session.beginTransaction();            
-            session.persist("insert into users (age, last_name, name) values (?, ?, ?)",
-                    new User(name, lastName, age));
+            session.persist(new User(name, lastName, age));
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -50,8 +49,11 @@ public class UserDaoHibernateImpl implements UserDao {
     public void removeUserById(long id) {
         try (Session session = Util.getSessionFactory().openSession()){
             session.beginTransaction();
-            session.createNativeQuery("delete from users WHERE id = :id",
-                 User.class).setParameter("id", id).executeUpdate();          
+            User user = session.get(User.class, id);
+            if (user != null) {
+                session.remove(user);
+                session.flush();
+            }                      
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -71,7 +73,7 @@ public class UserDaoHibernateImpl implements UserDao {
     public void cleanUsersTable() {
         try (Session session = Util.getSessionFactory().openSession()) {
             session.beginTransaction();
-            session.createNativeQuery("delete from users", User.class).executeUpdate();
+            session.createMutationQuery("DELETE User").executeUpdate();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
