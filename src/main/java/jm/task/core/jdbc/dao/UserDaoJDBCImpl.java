@@ -9,17 +9,11 @@ import java.util.List;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 
-public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
-    private final Util util = new Util();
-    private Statement statement = null;    
-
-    public UserDaoJDBCImpl() {
-        statement = util.openConnection();
-    }
+public class UserDaoJDBCImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        try {
+        try (Statement statement = Util.openConnection()) {
             final String query = "CREATE TABLE IF NOT EXISTS users "
                 .concat("(id INTEGER UNSIGNED not NULL AUTO_INCREMENT, ")
                 .concat("name VARCHAR(16) not NULL, ")
@@ -27,7 +21,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
                 .concat("age INTEGER not NULL, ")
                 .concat("PRIMARY KEY (id))");
             
-            statement.executeUpdate(query);            
+                statement.executeUpdate(query);            
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -35,7 +29,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
 
     @Override
     public void dropUsersTable() {        
-        try {
+        try (Statement statement = Util.openConnection()) {
             statement.executeUpdate("DROP TABLE IF EXISTS users");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -44,10 +38,12 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        if (name.isEmpty() || lastName.isEmpty() || age < 5 || age > 126) return;
+        if (name.isEmpty() || lastName.isEmpty() || age < 5 || age > 126) {
+            return;
+        }
         final String query = "INSERT INTO users (name, last_name, age) ".concat("VALUES ")
                 .concat(String.format("('%s', '%s', %d)", name, lastName, age));
-        try {
+        try (Statement statement = Util.openConnection()) {
             statement.executeUpdate(query);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -57,7 +53,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
     @Override
     public void removeUserById(long id) {
         final String query = "DELETE FROM users WHERE id = " + id;
-        try {
+        try (Statement statement = Util.openConnection()) {
             statement.executeUpdate(query);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -67,7 +63,9 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
     @Override
     public List<User> getAllUsers() {
         List<User> lsUsers = new ArrayList<>();
-        try (ResultSet resultSet = statement.executeQuery("SELECT * FROM users")) {
+        try (Statement statement = Util.openConnection();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM users"))
+        {
             User user = new User();
             while (resultSet.next()) {
                 user.setId(resultSet.getLong("id"));
@@ -84,15 +82,10 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
 
     @Override
     public void cleanUsersTable() {
-        try {
+        try (Statement statement = Util.openConnection()) {
             statement.executeUpdate("DELETE FROM users");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        util.closeConnection();
     }
 }
